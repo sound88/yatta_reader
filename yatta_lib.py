@@ -1,10 +1,11 @@
 import serial
-import Queue
+import queue
 import threading
 import time
+import binascii
 
-yattaHTTPQ =  Queue.Queue()
-yattaLogQ =  Queue.Queue()
+yattaHTTPQ =  queue.Queue()
+yattaLogQ =  queue.Queue()
 
 EPC_LEN = 12
 epc_tag = []
@@ -54,19 +55,19 @@ def yatta_waitRxReader(timeout_ms):
                 timeout_start(timeout_ms)
                 while True:
                         rxByte = uart.read(1)
-                        #print rx_idx
-                        #print rxByte.encode("hex")
+                        #print(rx_idx
+                        #print(rxByte.encode("hex")
                         if(rx_idx == 0):
-                            if(rxByte.encode("hex") == "a0"):
-                                #print "Header detected"
+                            if(rxByte == '\xa0'):   #if(rxByte.encode("hex") == "a0"):
+                                #print("Header detected"
                                 uartRxBuff.append(rxByte.encode('hex'))
                                 rx_idx = rx_idx +1
                         else:
-                            uartRxBuff.append(rxByte.encode('hex'))
+                            uartRxBuff.append(rxByte) #uartRxBuff.append(rxByte.encode('hex'))
                             rx_idx = rx_idx + 1
                             if((rx_idx - 2) == int(uartRxBuff[1], 16)):
                                 rxBuff = uartRxBuff
-                                #print rxBuff
+                                #print(rxBuff
                                 return True
                         if(timeoutFlag == True):
                             rxBuff = []
@@ -104,7 +105,7 @@ def CheckSum(uBuff, uBuffLen):
 
 #uBuff = [0xA0 , 0x04 , 0x01 , 0x74 , 0x00]
 #checksum_ans =  CheckSum(uBuff, 5)
-#print format(checksum_ans,'#04X')
+#print(format(checksum_ans,'#04X')
 
 #A0 04 01 89 01 D1
 #A0 13 01 89 8C 30 00 30 08 33 B2 DD D9 01 40 00 00 00 01 37 BB
@@ -128,7 +129,7 @@ def getQHttp():
     else:
         http_str = yattaHTTPQ.get()
     yattaHTTPQ_lastGetAvailable = False
-    #print "getAHttp" + http_str
+    #print("getAHttp" + http_str
     return http_str
     
 def peekQHttp():
@@ -157,7 +158,7 @@ def getQLog():
     global yattaLogQ
     global yattaLogQ_lastGetAvailable, yattaLogQ_lastGetData
     yattaLogQ_lastGetAvailable = False
-    #print "Flushed QLog"
+    #print("Flushed QLog"
     return yattaLogQ.get()
 
 def peekQLog():
@@ -214,7 +215,7 @@ def getTemp():
     tx_buff = [0xA0,0x03,0x01,0x7b,0x00]
     checksum_ans =  CheckSum(tx_buff, 4)
     tx_buff[4] = checksum_ans
-    #print "setWorkAntenna:" + str(ant) +">>"+ str(tx_buff)
+    #print("setWorkAntenna:" + str(ant) +">>"+ str(tx_buff)
     yatta_txData(tx_buff)
     #TODO: make below
     if(yatta_waitRxReader(0.5) == True):
@@ -222,7 +223,7 @@ def getTemp():
         rxBuff = []
         return temp
     else:
-        #print "setWorkAntenna timeout
+        #print("setWorkAntenna timeout
         return 0
     
 def setWorkAntenna(ant):
@@ -231,18 +232,18 @@ def setWorkAntenna(ant):
         tx_buff = [0xA0,0x04,0x01,0x74,ant,0x00]
         checksum_ans =  CheckSum(tx_buff, 5)
         tx_buff[5] = checksum_ans
-        #print "setWorkAntenna:" + str(ant) +">>"+ str(tx_buff)
+        #print("setWorkAntenna:" + str(ant) +">>"+ str(tx_buff)
         yatta_txData(tx_buff)
         #TODO: make below
         if(yatta_waitRxReader(0.5) == True):
-            #print "setWorkAntenna ret=" + str(rxBuff)
+            #print("setWorkAntenna ret=" + str(rxBuff)
             rxBuff = []
             return True
         else:
-            #print "setWorkAntenna timeout"
+            #print("setWorkAntenna timeout"
             return False
     else:
-        #print "setWorkAntenna wrong ant"
+        #print("setWorkAntenna wrong ant"
         return False
     
     
@@ -253,7 +254,7 @@ def get_inventory():
     num = 0
     cmd = 0x89 #realtime_inventory_cmd
     tx_buff = [0xA0,0x04,0x01,cmd,0x01,0xD1]
-    #print "get_inventory"
+    #print("get_inventory"
     yatta_txData(tx_buff)
     #TODO: make below
     while(yatta_waitRxReader(0.5) == True):
@@ -261,12 +262,12 @@ def get_inventory():
             if(int(rxBuff[1], 16)  == 0x0A):
                 #epc done with success
                 antId = rxBuff[4]
-                #print antId+":get_inventory readRate= " + str(rxBuff[5])+ str(rxBuff[6])
+                #print(antId+":get_inventory readRate= " + str(rxBuff[5])+ str(rxBuff[6]))
                 rxBuff = []
                 return True
             elif(int(rxBuff[1], 16)  == 0x04):
                 #don with error
-                print "get_inventory error="+str(rxBuff[4])
+                print("get_inventory error="+str(rxBuff[4]))
                 rxBuff = []
                 return False
             else:
@@ -275,15 +276,15 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 num = num+1
-                #print "get_inventory=>" + str(epc_tag) #TODO:Push Q here
+                #print("get_inventory=>" + str(epc_tag)) #TODO:Push Q here
         else:
             if(rxBuff[1]  == 0x13):
                 #epc available
                 #epc_tag = rxBuff[7:7+EPC_LEN]
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
-                print "get_inventory total num= " + str(num)
+                print("get_inventory total num= " + str(num))
                 return True
             else:
-                #print "epc tag not found"
+                #print("epc tag not found")
                 return False
