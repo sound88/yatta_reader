@@ -16,8 +16,8 @@ def mainTimeout_start(timeout_sec):
     mainTimeoutFlag = False
     threading.Timer(timeout_sec, mainTimeout_handler).start()
     
-##SIM_READDER = 0 #setup VH-xx to UART Tx pin(Board) 8 Rx pin(Board) 10
-SIM_READDER = 1  #Sim rfid reader
+SIM_READDER = 0 #setup VH-xx to UART Tx pin(Board) 8 Rx pin(Board) 10
+##SIM_READDER = 1  #Sim rfid reader
 
 
 #yatta_cfg

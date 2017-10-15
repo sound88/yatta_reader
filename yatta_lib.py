@@ -3,7 +3,7 @@ import queue
 import threading
 import time
 import binascii
-
+import codecs
 yattaHTTPQ =  queue.Queue()
 yattaLogQ =  queue.Queue()
 
@@ -50,48 +50,47 @@ def yatta_waitRxReader(timeout_ms):
         global yatta_mode , uart , rxBuff
         uartRxBuff = []
         if(yatta_mode == 0): # Real hardware
-                rx_idx = 0
-                global rxBuff
-                timeout_start(timeout_ms)
-                while True:
-                        rxByte = uart.read(1)
-                        #print(rx_idx
-                        #print(rxByte.encode("hex")
-                        if(rx_idx == 0):
-                            if(rxByte == '\xa0'):   #if(rxByte.encode("hex") == "a0"):
-                                #print("Header detected"
-                                uartRxBuff.append(rxByte.encode('hex'))
-                                rx_idx = rx_idx +1
-                        else:
-                            uartRxBuff.append(rxByte) #uartRxBuff.append(rxByte.encode('hex'))
-                            rx_idx = rx_idx + 1
-                            if((rx_idx - 2) == int(uartRxBuff[1], 16)):
-                                rxBuff = uartRxBuff
-                                #print(rxBuff
-                                return True
-                        if(timeoutFlag == True):
-                            rxBuff = []
-                            return False
-        else: # simulation
-                global sim_rx_idx
-                if(sim_rx_idx == 0):
-                        rxBuff = sim_rx_inventory0
-                elif(sim_rx_idx == 1):
-                        rxBuff = sim_rx_inventory1
-                elif(sim_rx_idx == 2):
-                        rxBuff = sim_rx_inventory2
-                elif(sim_rx_idx == 3):
-                        rxBuff = sim_rx_inventory3
-                elif(sim_rx_idx == 4):
-                        rxBuff = sim_rx_inventory4
-                elif(sim_rx_idx == 5):
-                        rxBuff = sim_rx_inventory5
+            rx_idx = 0
+            global rxBuff
+            timeout_start(timeout_ms)
+            while True:
+                rxByte = codecs.encode(uart.read(1), 'hex_codec')    #str(binascii.hexlify(uart.read(1)),'ascii')
+                #print("rx_idx=" , rx_idx)
+                #print("rxByte=" , rxByte) #print(rxByte.encode("hex"))
+                if(rx_idx == 0):
+                    if(rxByte == b'a0'):   #if(rxByte.encode("hex") == "a0"):
+                        #print("Header detected")
+                        uartRxBuff.append(rxByte) #uartRxBuff.append(rxByte.encode('hex'))
+                        rx_idx = rx_idx +1
                 else:
-                    sim_rx_idx = 0
+                    uartRxBuff.append(rxByte) #uartRxBuff.append(rxByte.encode('hex'))
+                    rx_idx = rx_idx + 1
+                    if((rx_idx - 2) == int(uartRxBuff[1], 16)):
+                        rxBuff = uartRxBuff
+                        print("rxBuff=", rxBuff)
+                        return True
+                if(timeoutFlag == True):
+                    rxBuff = []
                     return False
-                
-                sim_rx_idx = (sim_rx_idx+1)%6
-                return True
+        else: # simulation
+            global sim_rx_idx
+            if(sim_rx_idx == 0):
+                rxBuff = sim_rx_inventory0
+            elif(sim_rx_idx == 1):
+                rxBuff = sim_rx_inventory1
+            elif(sim_rx_idx == 2):
+                rxBuff = sim_rx_inventory2
+            elif(sim_rx_idx == 3):
+                rxBuff = sim_rx_inventory3
+            elif(sim_rx_idx == 4):
+                rxBuff = sim_rx_inventory4
+            elif(sim_rx_idx == 5):
+                rxBuff = sim_rx_inventory5
+            else:
+                sim_rx_idx = 0
+                return False
+            sim_rx_idx = (sim_rx_idx+1)%6
+            return True
 
 #Cyclic Redundancy Check (CRC) computation includes all data from Len. A reference CRC computation program is presented as follow:
 def CheckSum(uBuff, uBuffLen):
@@ -236,14 +235,14 @@ def setWorkAntenna(ant):
         yatta_txData(tx_buff)
         #TODO: make below
         if(yatta_waitRxReader(0.5) == True):
-            #print("setWorkAntenna ret=" + str(rxBuff)
+            #print("setWorkAntenna ret=" + str(rxBuff))
             rxBuff = []
             return True
         else:
-            #print("setWorkAntenna timeout"
+            #print("setWorkAntenna timeout")
             return False
     else:
-        #print("setWorkAntenna wrong ant"
+        #print("setWorkAntenna wrong ant")
         return False
     
     
