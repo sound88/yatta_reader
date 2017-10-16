@@ -54,6 +54,7 @@ def yatta_waitRxReader(timeout_ms):
             global rxBuff
             timeout_start(timeout_ms)
             while True:
+                #rxByte = uart.read(1)
                 rxByte = codecs.encode(uart.read(1), 'hex_codec')    #str(binascii.hexlify(uart.read(1)),'ascii')
                 #print("rx_idx=" , rx_idx)
                 #print("rxByte=" , rxByte) #print(rxByte.encode("hex"))
@@ -176,7 +177,7 @@ tag_debug = 0
 def push_epc_tag(ts, epc_list):
     global tag_debug, yattaHTTPQ, yattaLogQ, yatta_mode
     #Convert EPC to string of hex
-    if(str(epc_list[0]) == "e2"):
+    if(epc_list[0] == b'e2'):   #if(str(epc_list[0]) == "e2"):
         if(yatta_mode == 0):
             tagid_str = ''.join(epc_list)
         else:
@@ -253,18 +254,18 @@ def get_inventory():
     num = 0
     cmd = 0x89 #realtime_inventory_cmd
     tx_buff = [0xA0,0x04,0x01,cmd,0x01,0xD1]
-    #print("get_inventory"
+    print("$Start get_inventory")
     yatta_txData(tx_buff)
     #TODO: make below
     while(yatta_waitRxReader(0.5) == True):
         if yatta_mode == 0:
-            if(int(rxBuff[1], 16)  == 0x0A):
+            if(rxBuff[1]  == b'0a'):    #if(int(rxBuff[1], 16)  == 0x0A):
                 #epc done with success
                 antId = rxBuff[4]
                 #print(antId+":get_inventory readRate= " + str(rxBuff[5])+ str(rxBuff[6]))
                 rxBuff = []
                 return True
-            elif(int(rxBuff[1], 16)  == 0x04):
+            elif(rxBuff[1]  == b'04'):    #(int(rxBuff[1], 16)  == 0x04):
                 #don with error
                 print("get_inventory error="+str(rxBuff[4]))
                 rxBuff = []
@@ -275,7 +276,7 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 num = num+1
-                #print("get_inventory=>" + str(epc_tag)) #TODO:Push Q here
+                print("get_inventory=>" + str(epc_tag)) #TODO:Push Q here
         else:
             if(rxBuff[1]  == 0x13):
                 #epc available

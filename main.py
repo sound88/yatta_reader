@@ -109,7 +109,7 @@ try:
             if not (yatta_lib.qHttp_Empty()):
                 #------------ Local data log part --------------
                 tmpHTTPYatta = yatta_lib.getQHttp()
-                if (0):
+                if (1):
                     print("httpThread>> peekQHttp=" + tmpHTTPYatta)
                     yatta_lib.getQHttp()
                 else: #Below using send http

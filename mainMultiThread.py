@@ -1,3 +1,4 @@
+import _thread
 import time
 import threading
 import requests
@@ -73,13 +74,15 @@ yatta_lib.init(SIM_READDER)
 
 
 
-##def yatta_task(threadName, delay):
-##    while True:
-##        print(yatta+"\n")
-##
-##def report_task(threadName, delay):
-##    while True:
-##        print(report+"\n")
+def yatta_task(threadName, delay):
+    while True:
+        time.sleep(delay)
+        print("%s yatta\n" % (time.ctime(time.time())))
+
+def report_task(threadName, delay):
+    while True:
+        time.sleep(delay)
+        print("%s report\n" % (time.ctime(time.time())))
 
 print("--------Start Inventory YATTA!!!")
 antId = 0
@@ -90,11 +93,11 @@ scaning_time_sec = 2 #30
 sendingCnt = 0
 
 # Create two threads as follows
-##try:
-##    thread.start_new_thread( yatta_task, ("Thread-1", 2, ) )
-##    thread.start_new_thread( report_task, ("Thread-2", 4, ) )
-##except:
-##    print("Error: unable to start thread")
+try:
+    _thread.start_new_thread( yatta_task, ("Thread-1", 2, ) )
+    _thread.start_new_thread( report_task, ("Thread-2", 4, ) )
+except:
+    print("Error: unable to start thread")
 
 try:
     #Scan EPC
