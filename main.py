@@ -101,7 +101,7 @@ try:
                     if(antInit[antId] == False):
                         antInit[antId] = True;
                         print(str(antId) + " init success")
-##            antId++
+            antId=(antId+1)%4
             if(mainTimeoutFlag):
                 yatta_st = 2
                 print("Sending data " + str(yatta_lib.numQHTTP())+ " ...")
@@ -138,7 +138,7 @@ try:
                 #datalog_str = str(index_datalog) + ' ' +  str(timestamp)  + ' ' + str(tagid_str) + '\r\n' # Format data 1. timeStamp(UTC) epc_tag
                 datalog_str = yatta_lib.getQLog()
                 f.write(datalog_str) 
-                #print("logThread>>" + datalog_str
+                print("logThread>>" + datalog_str)
                 f.close()
                 
             if (yatta_lib.qHttp_Empty() and yatta_lib.qLog_Empty()):

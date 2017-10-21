@@ -7,6 +7,8 @@ import codecs
 yattaHTTPQ =  queue.Queue()
 yattaLogQ =  queue.Queue()
 
+COMMAND_SUCCESS = b'10'
+
 EPC_LEN = 12
 epc_tag = []
 uart = 0
@@ -68,7 +70,7 @@ def yatta_waitRxReader(timeout_ms):
                     rx_idx = rx_idx + 1
                     if((rx_idx - 2) == int(uartRxBuff[1], 16)):
                         rxBuff = uartRxBuff
-                        print("rxBuff=", rxBuff)
+                        #print("rxBuff=", rxBuff)
                         return True
                 if(timeoutFlag == True):
                     rxBuff = []
@@ -232,15 +234,20 @@ def setWorkAntenna(ant):
         tx_buff = [0xA0,0x04,0x01,0x74,ant,0x00]
         checksum_ans =  CheckSum(tx_buff, 5)
         tx_buff[5] = checksum_ans
-        #print("setWorkAntenna:" + str(ant) +">>"+ str(tx_buff)
+        #print("setWorkAntenna:" + str(ant) +">>"+ str(tx_buff))
         yatta_txData(tx_buff)
         #TODO: make below
         if(yatta_waitRxReader(0.5) == True):
-            #print("setWorkAntenna ret=" + str(rxBuff))
-            rxBuff = []
-            return True
+            if(rxBuff[4] == COMMAND_SUCCESS):
+                #print("setWorkAntenna " + str(ant) +" Success")
+                rxBuff = []
+                return True
+            else:
+                #print("setWorkAntenna " + str(ant) +" ErrorCode=" + rxBuff[4])
+                rxBuff = []
+                return False
         else:
-            #print("setWorkAntenna timeout")
+            #print("setWorkAntenna " + str(ant) +" timeout")
             return False
     else:
         #print("setWorkAntenna wrong ant")
