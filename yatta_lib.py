@@ -7,7 +7,7 @@ import codecs
 yattaHTTPQ =  queue.Queue()
 yattaLogQ =  queue.Queue()
 
-COMMAND_SUCCESS = b'10'
+COMMAND_SUCCESS = b'\10'
 
 EPC_LEN = 12
 epc_tag = []
@@ -54,21 +54,23 @@ def yatta_waitRxReader(timeout_ms):
         if(yatta_mode == 0): # Real hardware
             rx_idx = 0
             global rxBuff
+            packLen = 0
             timeout_start(timeout_ms)
             while True:
-                #rxByte = uart.read(1)
-                rxByte = codecs.encode(uart.read(1), 'hex_codec')    #str(binascii.hexlify(uart.read(1)),'ascii')
+                rxByte = uart.read(1)
+                #rxByte = int.from_bytes(uart.read(1), byteorder='little')
+                #rxByte = codecs.encode(uart.read(1), 'hex_codec')    #str(binascii.hexlify(uart.read(1)),'ascii')
                 #print("rx_idx=" , rx_idx)
                 #print("rxByte=" , rxByte) #print(rxByte.encode("hex"))
                 if(rx_idx == 0):
-                    if(rxByte == b'a0'):   #if(rxByte.encode("hex") == "a0"):
+                    if(rxByte == b'\xa0'):   #if(rxByte.encode("hex") == "a0"):
                         #print("Header detected")
                         uartRxBuff.append(rxByte) #uartRxBuff.append(rxByte.encode('hex'))
                         rx_idx = rx_idx +1
                 else:
                     uartRxBuff.append(rxByte) #uartRxBuff.append(rxByte.encode('hex'))
                     rx_idx = rx_idx + 1
-                    if((rx_idx - 2) == int(uartRxBuff[1], 16)):
+                    if(rx_idx - 2 == int.from_bytes(uartRxBuff[1], byteorder='little')):
                         rxBuff = uartRxBuff
                         #print("rxBuff=", rxBuff)
                         return True
@@ -179,7 +181,7 @@ tag_debug = 0
 def push_epc_tag(ts, epc_list):
     global tag_debug, yattaHTTPQ, yattaLogQ, yatta_mode
     #Convert EPC to string of hex
-    if(epc_list[0] == b'e2'):   #if(str(epc_list[0]) == "e2"):
+    if(epc_list[0] == b'\xe2'):   #if(str(epc_list[0]) == "e2"):
         if(yatta_mode == 0):
             tagid_str = ''.join(epc_list)
         else:
@@ -266,13 +268,13 @@ def get_inventory():
     #TODO: make below
     while(yatta_waitRxReader(0.5) == True):
         if yatta_mode == 0:
-            if(rxBuff[1]  == b'0a'):    #if(int(rxBuff[1], 16)  == 0x0A):
+            if(rxBuff[1]  == b'\x0a'):    #if(int(rxBuff[1], 16)  == 0x0A):
                 #epc done with success
                 antId = rxBuff[4]
                 #print(antId+":get_inventory readRate= " + str(rxBuff[5])+ str(rxBuff[6]))
                 rxBuff = []
                 return True
-            elif(rxBuff[1]  == b'04'):    #(int(rxBuff[1], 16)  == 0x04):
+            elif(rxBuff[1]  == b'\x04'):    #(int(rxBuff[1], 16)  == 0x04):
                 #don with error
                 print("get_inventory error="+str(rxBuff[4]))
                 rxBuff = []
