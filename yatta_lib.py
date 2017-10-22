@@ -73,7 +73,7 @@ def yatta_waitRxReader(timeout_ms):
 
                 if((rx_idx > 1) and (rx_idx - 2 == packLen)):
                     rxBuff = uartRxBuff
-                    print("rxBuff=", rxBuff)
+                    #print("rxBuff=", rxBuff)
                     return True
                 if(timeoutFlag == True):
                     rxBuff = []
@@ -275,7 +275,7 @@ def get_inventory():
                 antId = rxBuff[4]
                 #readRate = str(int.from_bytes(rxBuff[6], byteorder='little'))+str(int.from_bytes(rxBuff[5], byteorder='little'))
                 readRate = int.from_bytes(rxBuff[5], byteorder='little')
-                readRate = int.from_bytes(rxBuff[6], byteorder='little')*16+readRate
+                readRate = int.from_bytes(rxBuff[6], byteorder='little')+readRate*16
                 print(str(antId)+":get_inventory readRate = " + str(readRate))
                 #print(str(antId)+":get_inventory readRate= ")
                 rxBuff = []
@@ -291,7 +291,7 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 num = num+1
-                print("get_inventory=>" + str(epc_tag)) #TODO:Push Q here
+                #print("get_inventory=>" + str(epc_tag)) #TODO:Push Q here
         else:
             if(rxBuff[1]  == b'\x13'):
                 #epc available
