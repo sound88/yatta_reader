@@ -31,7 +31,6 @@ global logDirectory
 global EPC_LEN
 global epc_tag
 
-
 index_datalog = 0
 
 
