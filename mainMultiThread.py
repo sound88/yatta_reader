@@ -1,3 +1,4 @@
+import _thread
 import time
 import threading
 import requests
@@ -17,7 +18,7 @@ def mainTimeout_start(timeout_sec):
     threading.Timer(timeout_sec, mainTimeout_handler).start()
     
 SIM_READDER = 0 #setup VH-xx to UART Tx pin(Board) 8 Rx pin(Board) 10
-#SIM_READDER = 1  #Sim rfid reader
+##SIM_READDER = 1  #Sim rfid reader
 
 
 #yatta_cfg
@@ -73,7 +74,15 @@ yatta_lib.init(SIM_READDER)
 
 
 
+def yatta_task(threadName, delay):
+    while True:
+        time.sleep(delay)
+        print("%s yatta\n" % (time.ctime(time.time())))
 
+def report_task(threadName, delay):
+    while True:
+        time.sleep(delay)
+        print("%s report\n" % (time.ctime(time.time())))
 
 print("--------Start Inventory YATTA!!!")
 antId = 0
@@ -82,6 +91,14 @@ antInit = [False, False, False, False]
 yatta_st = 0
 scaning_time_sec = 2 #30
 sendingCnt = 0
+
+# Create two threads as follows
+try:
+    _thread.start_new_thread( yatta_task, ("Thread-1", 2, ) )
+    _thread.start_new_thread( report_task, ("Thread-2", 4, ) )
+except:
+    print("Error: unable to start thread")
+
 try:
     #Scan EPC
     while True:
@@ -101,7 +118,7 @@ try:
                     if(antInit[antId] == False):
                         antInit[antId] = True;
                         print(str(antId) + " init success")
-            antId=(antId+1)%4
+##            antId++
             if(mainTimeoutFlag):
                 yatta_st = 2
                 print("Sending data " + str(yatta_lib.numQHTTP())+ " ...")
@@ -109,7 +126,7 @@ try:
             if not (yatta_lib.qHttp_Empty()):
                 #------------ Local data log part --------------
                 tmpHTTPYatta = yatta_lib.getQHttp()
-                if (1):
+                if (0):
                     print("httpThread>> peekQHttp=" + tmpHTTPYatta)
                     yatta_lib.getQHttp()
                 else: #Below using send http
