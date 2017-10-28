@@ -274,7 +274,7 @@ def get_inventory():
     yatta_txData(tx_buff)
     #TODO: make below
     while(yatta_waitRxReader(0.5) == True):
-        current_timestamp = arrow.utcnow().to('Asia/Bangkok')
+        current_timestamp = arrow.utcnow().to('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss')
         if yatta_mode == 0:
             if(rxBuff[1]  == b'\x0a'):    #if(int(rxBuff[1], 16)  == 0x0A):
                 #epc done with success
@@ -284,7 +284,7 @@ def get_inventory():
                 return True
             elif(rxBuff[1]  == b'\x04'):    #(int(rxBuff[1], 16)  == 0x04):
                 #don with error
-                print("get_inventory error="+str(rxBuff[4]))
+                print('[' + current_timestamp + ']' + "get_inventory error="+ str(rxBuff[4]))
                 rxBuff = []
                 return False
             else:
@@ -300,14 +300,14 @@ def get_inventory():
                 #epc_tag = rxBuff[7:7+EPC_LEN]
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
-                print("get_inventory total num= " + str(num))
+                print('[' + current_timestamp + ']' + "get_inventory total num= " + str(num))
                 return True
             else:
                 #print("epc tag not found")
                 return False
 
 def beautify_log(log_message):
-    timestamp = arrow.utcnow().to('Asia/Bangkok')
+    # timestamp = arrow.utcnow().to('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss')
     log_message = log_message.replace("b'\\x", '').replace("'", '')
     return (log_message)
 
