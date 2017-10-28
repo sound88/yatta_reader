@@ -2,6 +2,7 @@ import serial
 import queue
 import threading
 import time
+import arrow
 
 yattaHTTPQ =  queue.Queue()
 yattaLogQ =  queue.Queue()
@@ -33,6 +34,7 @@ def timeout_handler():
 def timeout_start(timeout_sec):
     timeoutFlag = False
     threading.Timer(timeout_sec, timeout_handler).start()
+
 
 
 def init(yatta_sim):
@@ -272,6 +274,7 @@ def get_inventory():
     yatta_txData(tx_buff)
     #TODO: make below
     while(yatta_waitRxReader(0.5) == True):
+        current_timestamp = arrow.utcnow().to('Asia/Bangkok')
         if yatta_mode == 0:
             if(rxBuff[1]  == b'\x0a'):    #if(int(rxBuff[1], 16)  == 0x0A):
                 #epc done with success
@@ -290,7 +293,7 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 num = num+1
-                print("get_inventory=>" + str(epc_tag)) #TODO:Push Q here
+                print('[' + current_timestamp + ']' + "get_inventory=>" + beautify_log(str(epc_tag))) #TODO:Push Q here
         else:
             if(rxBuff[1]  == 0x13):
                 #epc available
@@ -302,3 +305,12 @@ def get_inventory():
             else:
                 #print("epc tag not found")
                 return False
+
+def beautify_log(log_message):
+    timestamp = arrow.utcnow().to('Asia/Bangkok')
+    log_message = log_message.replace("b'\\x", '').replace("'", '')
+    return (log_message)
+
+
+
+
