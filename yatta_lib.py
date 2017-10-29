@@ -69,22 +69,23 @@ def yatta_waitRxReader(timeout_ms):
             timeout_start(timeout_ms)
             while True:
                 rxByte = uart.read(1)
-                #rxByte = int.from_bytes(uart.read(1), byteorder='little')
-                #rxByte = codecs.encode(uart.read(1), 'hex_codec')    #str(binascii.hexlify(uart.read(1)),'ascii')
-                #print("rx_idx=" , rx_idx)
-                #print("rxByte=" , rxByte) #print(rxByte.encode("hex"))
                 if(rx_idx == 0):
                     if(rxByte == b'\xa0'):   #if(rxByte.encode("hex") == "a0"):
                         #print("Header detected")
                         uartRxBuff.append(rxByte) #uartRxBuff.append(rxByte.encode('hex'))
                         rx_idx = rx_idx +1
+                elif (rx_idx == 1):
+                    packLen = int.from_bytes(rxByte, byteorder='little')
+                    uartRxBuff.append(rxByte)
+                    rx_idx = rx_idx +1
                 else:
                     uartRxBuff.append(rxByte) #uartRxBuff.append(rxByte.encode('hex'))
                     rx_idx = rx_idx + 1
-                    if(rx_idx - 2 == int.from_bytes(uartRxBuff[1], byteorder='little')):
-                        rxBuff = uartRxBuff
-                        #print("rxBuff=", rxBuff)
-                        return True
+
+                if((rx_idx > 1) and (rx_idx - 2 == packLen)):
+                    rxBuff = uartRxBuff
+                    #print("rxBuff=", rxBuff)
+                    return True
                 if(timeoutFlag == True):
                     rxBuff = []
                     return False
@@ -190,13 +191,14 @@ def qLog_Empty():
 tag_debug = 0 
         
 def push_epc_tag(ts, epc_list):
+    #import ipdb; ipdb.set_trace()
     global tag_debug, yattaHTTPQ, yattaLogQ, yatta_mode
     #Convert EPC to string of hex
     if(epc_list[0] == b'\xe2'):   #if(str(epc_list[0]) == "e2"):
         if(yatta_mode == 0):
-            tagid_str = ''.join(epc_list)
+            tagid_str = str(epc_list) #''.join(epc_list)
         else:
-            tagid_str = ''.join(format(x, '02X') for x in epc_list)
+            tagid_str = str(epc_list) #''.join(format(x, '02X') for x in epc_list)
         #debug
         tag_debug = tag_debug+1
         yattaHTTPQ.put(str(tag_debug) + "&dev_time=" + str(ts))
@@ -274,7 +276,7 @@ def get_inventory():
     num = 0
     cmd = 0x89 #realtime_inventory_cmd
     tx_buff = [0xA0,0x04,0x01,cmd,0x01,0xD1]
-    print("$Start get_inventory")
+    #print("$Start get_inventory yatta_mode="+str(yatta_mode))
     yatta_txData(tx_buff)
     #TODO: make below
     while(yatta_waitRxReader(0.5) == True):
@@ -283,7 +285,11 @@ def get_inventory():
             if(rxBuff[1]  == b'\x0a'):    #if(int(rxBuff[1], 16)  == 0x0A):
                 #epc done with success
                 antId = rxBuff[4]
-                #print(antId+":get_inventory readRate= " + str(rxBuff[5])+ str(rxBuff[6]))
+                #readRate = str(int.from_bytes(rxBuff[6], byteorder='little'))+str(int.from_bytes(rxBuff[5], byteorder='little'))
+                readRate = int.from_bytes(rxBuff[5], byteorder='little')
+                readRate = int.from_bytes(rxBuff[6], byteorder='little')+readRate*16
+                print(str(antId)+":get_inventory readRate = " + str(readRate))
+                #print(str(antId)+":get_inventory readRate= ")
                 rxBuff = []
                 return True
             elif(rxBuff[1]  == b'\x04'):    #(int(rxBuff[1], 16)  == 0x04):
@@ -298,10 +304,11 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 num = num+1
+
                 print('[' + current_timestamp + ']' + " get_inventory=>" + beautify_log(str(epc_tag))) #TODO:Push Q here
                 logger.info(" get_inventory=>" + beautify_log(str(epc_tag)))
         else:
-            if(rxBuff[1]  == 0x13):
+            if(rxBuff[1]  == b'\x13'):
                 #epc available
                 #epc_tag = rxBuff[7:7+EPC_LEN]
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
@@ -310,7 +317,7 @@ def get_inventory():
                 logger.info(" get_inventory total num= " + str(num))
                 return True
             else:
-                #print("epc tag not found")
+                print("epc tag not found "+str(rxBuff))
                 return False
 
 def beautify_log(log_message):
