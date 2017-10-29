@@ -324,6 +324,7 @@ def beautify_log(log_message):
     # timestamp = arrow.utcnow().to('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss')
     log_message = log_message.replace("b'\\x", '').replace("'", '').replace(",", '').replace('[', '').replace(']', '')
     log_message.upper().replace(' ', '')
+    #dajl;
     return (log_message)
 
 
