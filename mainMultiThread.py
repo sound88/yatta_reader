@@ -75,33 +75,15 @@ yatta_lib.init(SIM_READDER)
 
 
 def yatta_task(threadName, delay):
+    print("--------Start Inventory YATTA!!!")
+    antId = 0
+    antEnabled = [True, True, True, True]
+    antInit = [False, False, False, False]
+    yatta_st = 0
+    scaning_time_sec = 2 #30
     while True:
-        time.sleep(delay)
-        print("%s yatta\n" % (time.ctime(time.time())))
-
-def report_task(threadName, delay):
-    while True:
-        time.sleep(delay)
-        print("%s report\n" % (time.ctime(time.time())))
-
-print("--------Start Inventory YATTA!!!")
-antId = 0
-antEnabled = [True, True, True, True]
-antInit = [False, False, False, False]
-yatta_st = 0
-scaning_time_sec = 2 #30
-sendingCnt = 0
-
-# Create two threads as follows
-try:
-    _thread.start_new_thread( yatta_task, ("Thread-1", 2, ) )
-    _thread.start_new_thread( report_task, ("Thread-2", 4, ) )
-except:
-    print("Error: unable to start thread")
-
-try:
-    #Scan EPC
-    while True:
+        #time.sleep(delay)
+        #print("%s yatta\n" % (time.ctime(time.time())))
         if(yatta_st == 0):  #set timer
             print("setTimer")
             mainTimeout_start(scaning_time_sec)
@@ -118,92 +100,72 @@ try:
                     if(antInit[antId] == False):
                         antInit[antId] = True;
                         print(str(antId) + " init success")
-##            antId++
+            antId=(antId+1)%4
             if(mainTimeoutFlag):
-                yatta_st = 2
+                yatta_st = 0
                 print("Sending data " + str(yatta_lib.numQHTTP())+ " ...")
-        elif (yatta_st == 2):   #
-            if not (yatta_lib.qHttp_Empty()):
-                #------------ Local data log part --------------
-                tmpHTTPYatta = yatta_lib.getQHttp()
-                if (0):
-                    print("httpThread>> peekQHttp=" + tmpHTTPYatta)
-                    yatta_lib.getQHttp()
-                else: #Below using send http
-                    server_url = host_url + "?sn=" + sn + "&tag_id=" + tmpHTTPYatta
-                    #print("httpThread>> http request=" + server_url
-                    try:
-                        r = requests.get(server_url)
-                        if(r.status_code == 200):
-                            sendingCnt = sendingCnt+1
-                            #print("httpThread>> return ="+str(r.status_code)
-                            #yatta_lib.getQHttp()
-                    except:
-                        print("network fail")
-                        
+        
+
+def report_task(threadName, delay):
+    sendingCnt = 0 
+    while True:
+        #time.sleep(delay)
+        #print("%s report\n" % (time.ctime(time.time())))
+        if not (yatta_lib.qHttp_Empty()):
+            #------------ Local data log part --------------
+            tmpHTTPYatta = yatta_lib.getQHttp()
+            if (1):
+                print("httpThread>> peekQHttp=" + tmpHTTPYatta)
+                yatta_lib.getQHttp()
+            else: #Below using send http
+                server_url = host_url + "?sn=" + sn + "&tag_id=" + tmpHTTPYatta
+                #print("httpThread>> http request=" + server_url
+                try:
+                    r = requests.get(server_url)
+                    if(r.status_code == 200):
+                        sendingCnt = sendingCnt+1
+                        #print("httpThread>> return ="+str(r.status_code)
+                        #yatta_lib.getQHttp()
+                except:
+                    print("network fail")            
 #End sending
                 #print("\t:NumLog= " + str(yatta_lib.numQHTTP())
                     
-            if not (yatta_lib.qLog_Empty()):
-                #------------ Local data log part --------------
-                timestamp = time.time
-                if not os.path.exists(logDirectory):
-                    os.makedirs(logDirectory)
-                # Filename is "dataLog_ts.txt"
-                Filename = "dataLog_" + str(time.strftime("%Y%m%d" , time.localtime() ) ) +'.txt'
-                f = open(logDirectory + Filename, 'a')     # open(filename, mode).
-                #datalog_str = str(index_datalog) + ' ' +  str(timestamp)  + ' ' + str(tagid_str) + '\r\n' # Format data 1. timeStamp(UTC) epc_tag
-                datalog_str = yatta_lib.getQLog()
-                f.write(datalog_str) 
-                #print("logThread>>" + datalog_str
-                f.close()
+        if not (yatta_lib.qLog_Empty()):
+            #------------ Local data log part --------------
+            timestamp = time.time
+            if not os.path.exists(logDirectory):
+                os.makedirs(logDirectory)
+            # Filename is "dataLog_ts.txt"
+            Filename = "dataLog_" + str(time.strftime("%Y%m%d" , time.localtime() ) ) +'.txt'
+            f = open(logDirectory + Filename, 'a')     # open(filename, mode).
+            #datalog_str = str(index_datalog) + ' ' +  str(timestamp)  + ' ' + str(tagid_str) + '\r\n' # Format data 1. timeStamp(UTC) epc_tag
+            datalog_str = yatta_lib.getQLog()
+            f.write(datalog_str) 
+            #print("logThread>>" + datalog_str
+            f.close()
                 
-            if (yatta_lib.qHttp_Empty() and yatta_lib.qLog_Empty()):
-                yatta_st = 0
-                print("Data flushed " + str(sendingCnt))
-                sendingCnt = 0
+        if (yatta_lib.qHttp_Empty() and yatta_lib.qLog_Empty()):
+            #yatta_st = 0
+            print("Data flushed " + str(sendingCnt))
+            sendingCnt = 0
             
-   
-        
-        #antId=(antId+1)%4
-        
-##        if(antId == 0):
-##            temp = yatta_lib.getTemp();
-##            print("Temp= " + str(temp)+" degC" + " NumLog= " + str(yatta_lib.numQHTTP())
-            
-            
-##        if not (yatta_lib.qHttp_Empty()):
-##            #------------ Local data log part --------------
-##            tmpHTTPYatta = yatta_lib.peekQHttp()
-##            print("httpThread>> peekQHttp=" + tmpHTTPYatta
-##            server_url = host_url + "?sn=" + sn + "&tag_id=" + tmpHTTPYatta
-##            print("httpThread>> http request=" + server_url
-##            try:
-##                r = requests.get(server_url)
-##                #print("httpThread>> return ="+str(r.status_code)
-##                #if(r.status_code == 200):
-##                yatta_lib.getQHttp()
-##            except:
-##                print("network fail"
-##                
-##            #print("\t:NumLog= " + str(yatta_lib.numQHTTP())
-##                
-##        if not (yatta_lib.qLog_Empty()):
-##            #------------ Local data log part --------------
-##            index_datalog = index_datalog  + 1
-##            timestamp = time.time
-##            if not os.path.exists(logDirectory):
-##                os.makedirs(logDirectory)
-##            # Filename is "dataLog_ts.txt"
-##            Filename = "dataLog_" + str(time.strftime("%Y%m%d" , time.localtime() ) ) +'.txt'
-##            f = open(logDirectory + Filename, 'a')     # open(filename, mode).
-##            #datalog_str = str(index_datalog) + ' ' +  str(timestamp)  + ' ' + str(tagid_str) + '\r\n' # Format data 1. timeStamp(UTC) epc_tag
-##            datalog_str = yatta_lib.getQLog()
-##            f.write(datalog_str) 
-##            #print("logThread>>" + datalog_str
-##            f.close()
-except KeyboardInterrupt: # press Ctrl + c
-    print("Exit program press F5 to run again")
+
+print("--------Start Inventory YATTA!!!")
+antId = 0
+antEnabled = [True, True, True, True]
+antInit = [False, False, False, False]
+yatta_st = 0
+scaning_time_sec = 2 #30
+sendingCnt = 0
+
+# Create two threads as follows
+try:
+    _thread.start_new_thread( yatta_task, ("Thread-1", 2, ) )
+    _thread.start_new_thread( report_task, ("Thread-2", 4, ) )
+except:
+    print("Error: unable to start thread")
+
         
     
 
