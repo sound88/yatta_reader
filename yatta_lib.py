@@ -6,7 +6,7 @@ import arrow
 import logging
 
 logger = logging.getLogger(__name__)
-logger.basicConfig(filename = 'Tag.log', format='[ %(asctime)s ] %(message)s')
+logger.basicConfig(filename = 'tag.log', format='[ %(asctime)s ] %(message)s', level=logging.DEBUG)
 
 yattaHTTPQ = queue.Queue()
 yattaLogQ = queue.Queue()
@@ -286,7 +286,7 @@ def get_inventory():
             elif(rxBuff[1]  == b'\x04'):    #(int(rxBuff[1], 16)  == 0x04):
                 #don with error
                 print('[' + current_timestamp + ']' + " get_inventory error="+ str(rxBuff[4]))
-                logger.error("get_inventory error="+ beautify_log(str(rxBuff[4])))
+                logger.error("get_inventory error=> "+ beautify_log(str(rxBuff[4])))
                 rxBuff = []
                 return False
             else:
