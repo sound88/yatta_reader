@@ -5,8 +5,11 @@ import time
 import arrow
 import logging
 
+
 logger = logging.getLogger(__name__)
-logger.basicConfig(filename = 'tag.log', format='[ %(asctime)s ] %(message)s', level=logging.DEBUG)
+logger.setLevel(logging.DEBUG)
+
+logger.basicConfig(filename = 'tag.log', format='[ %(asctime)s ][ %(name)s ][ %(levelname)s ] %(message)s')
 
 yattaHTTPQ = queue.Queue()
 yattaLogQ = queue.Queue()
