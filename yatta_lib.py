@@ -319,6 +319,7 @@ def get_inventory():
             else:
                 print("epc tag not found "+str(rxBuff))
                 logger.error("epc tag not found "+str(rxBuff))
+                # add logger.error
                 return False
 
 def beautify_log(log_message):
