@@ -113,7 +113,7 @@ def CheckSum(uBuff, uBuffLen):
 
 #uBuff = [0xA0 , 0x04 , 0x01 , 0x74 , 0x00]
 #checksum_ans =  CheckSum(uBuff, 5)
-#print(format(checksum_ans,'#04X')
+#print(format(checksum_ansprint ,'#04X')
 
 #A0 04 01 89 01 D1
 #A0 13 01 89 8C 30 00 30 08 33 B2 DD D9 01 40 00 00 00 01 37 BB
@@ -281,7 +281,7 @@ def get_inventory():
                 return True
             elif(rxBuff[1]  == b'\x04'):    #(int(rxBuff[1], 16)  == 0x04):
                 #don with error
-                print('[' + current_timestamp + ']' + "get_inventory error="+ str(rxBuff[4]))
+                print('[' + current_timestamp + ']' + " get_inventory error="+ str(rxBuff[4]))
                 rxBuff = []
                 return False
             else:
@@ -290,14 +290,14 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 num = num+1
-                print('[' + current_timestamp + ']' + "get_inventory=>" + beautify_log(str(epc_tag))) #TODO:Push Q here
+                print('[' + current_timestamp + ']' + " get_inventory=>" + beautify_log(str(epc_tag))) #TODO:Push Q here
         else:
             if(rxBuff[1]  == 0x13):
                 #epc available
                 #epc_tag = rxBuff[7:7+EPC_LEN]
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
-                print('[' + current_timestamp + ']' + "get_inventory total num= " + str(num))
+                print('[' + current_timestamp + ']' + " get_inventory total num= " + str(num))
                 return True
             else:
                 #print("epc tag not found")
