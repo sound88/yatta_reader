@@ -305,7 +305,7 @@ def get_inventory():
 
 def beautify_log(log_message):
     # timestamp = arrow.utcnow().to('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss')
-    log_message = log_message.replace("b'\\x", '').replace("'", '')
+    log_message = log_message.replace("b'\\x", '').replace("'", '').replace(",", '')
     return (log_message)
 
 
