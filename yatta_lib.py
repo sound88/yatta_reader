@@ -184,14 +184,11 @@ def push_epc_tag(ts, epc_list):
     global tag_debug, yattaHTTPQ, yattaLogQ, yatta_mode
     #Convert EPC to string of hex
     if(epc_list[0] == b'\xe2'):   #if(str(epc_list[0]) == "e2"):
-        if(yatta_mode == 0):
-            tagid_str = str(epc_list) #''.join(epc_list)
-        else:
-            tagid_str = str(epc_list) #''.join(format(x, '02X') for x in epc_list)
+        tagid_str = str(epc_list) #''.join(epc_list)
         #debug
-        tag_debug = tag_debug+1
-        yattaHTTPQ.put(str(tag_debug) + "&dev_time=" + str(ts))
-        #yattaHTTPQ.put(str(tagid_str) + "&dev_time=" + str(ts))
+        #tag_debug = tag_debug+1
+        #yattaHTTPQ.put(str(tag_debug) + "&dev_time=" + str(ts))
+        yattaHTTPQ.put(str(tagid_str) + "&dev_time=" + str(ts))
         #yattaLogQ.put(str(ts)  + ' ' + str(tagid_str) + '\r\n') # Format data 1. timeStamp(UTC) epc_tag
 #1/18/2017 9:53:22 PM  A0 04 01 74 01 E6
 #1/18/2017 9:53:22 PM  A0 04 01 74 10 D7
