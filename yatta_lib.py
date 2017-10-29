@@ -4,8 +4,8 @@ import threading
 import time
 import arrow
 
-yattaHTTPQ =  queue.Queue()
-yattaLogQ =  queue.Queue()
+yattaHTTPQ = queue.Queue()
+yattaLogQ = queue.Queue()
 
 ## Initial Variable ###
 
@@ -35,10 +35,7 @@ def timeout_start(timeout_sec):
     timeoutFlag = False
     threading.Timer(timeout_sec, timeout_handler).start()
 
-
-
 def init(yatta_sim):
-        import ipdb; ipdb.set_trace()
         global yatta_mode , uart
         yatta_mode = yatta_sim
         if(yatta_mode == 0):
