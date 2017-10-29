@@ -3,6 +3,10 @@ import queue
 import threading
 import time
 import arrow
+import logging
+
+logger = logging.getLogger(__name__)
+logger.basicConfig(filename = 'Tag.log', format='[ %(asctime)s ] %(message)s')
 
 yattaHTTPQ = queue.Queue()
 yattaLogQ = queue.Queue()
@@ -282,6 +286,7 @@ def get_inventory():
             elif(rxBuff[1]  == b'\x04'):    #(int(rxBuff[1], 16)  == 0x04):
                 #don with error
                 print('[' + current_timestamp + ']' + " get_inventory error="+ str(rxBuff[4]))
+                logger.error("get_inventory error="+ beautify_log(str(rxBuff[4])))
                 rxBuff = []
                 return False
             else:
@@ -291,6 +296,7 @@ def get_inventory():
                 rxBuff = []
                 num = num+1
                 print('[' + current_timestamp + ']' + " get_inventory=>" + beautify_log(str(epc_tag))) #TODO:Push Q here
+                logger.info(" get_inventory=>" + beautify_log(str(epc_tag)))
         else:
             if(rxBuff[1]  == 0x13):
                 #epc available
@@ -298,6 +304,7 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 print('[' + current_timestamp + ']' + " get_inventory total num= " + str(num))
+                logger.info(" get_inventory total num= " + str(num))
                 return True
             else:
                 #print("epc tag not found")
