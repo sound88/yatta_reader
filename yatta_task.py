@@ -4,7 +4,7 @@ def vTask_yatta():
             print "setTimer"
             mainTimeout_start(scaning_time_sec)
             yatta_st = 1
-            print "Scaning start " + str(scaning_time_sec) +" sec"
+            print ("Scaning start " + str(scaning_time_sec) +" sec")
         
         elif(yatta_st == 1):  #set scan
             if(antEnabled[antId] == True):
@@ -15,18 +15,18 @@ def vTask_yatta():
                 else:
                     if(antInit[antId] == False):
                         antInit[antId] = True;
-                        print str(antId) + " init success"    
+                        print (str(antId) + " init success")
 ##            antId++
                     
                 if(mainTimeoutFlag):
                     yatta_st = 2
-                    print "Sending data " + str(yatta_lib.numQHTTP())+ " ..."
+                    print ("Sending data " + str(yatta_lib.numQHTTP())+ " ...")
             elif (yatta_st == 2):   #
                 if not (yatta_lib.qHttp_Empty()):
                     #------------ Local data log part --------------
                     tmpHTTPYatta = yatta_lib.getQHttp()
                     if (0):
-                        print "httpThread>> peekQHttp=" + tmpHTTPYatta
+                        print ("httpThread>> peekQHttp=" + tmpHTTPYatta)
                         yatta_lib.getQHttp()
                     else: #Below using send http
                         server_url = host_url + "?sn=" + sn + "&tag_id=" + tmpHTTPYatta
@@ -38,7 +38,7 @@ def vTask_yatta():
                                 #print "httpThread>> return ="+str(r.status_code)
                                 #yatta_lib.getQHttp()
                         except:
-                            print "network fail"
+                            print ("network fail")
 
 def vTask_report(threadName, q):
     while True:
@@ -58,6 +58,6 @@ def vTask_report(threadName, q):
          
         if (yatta_lib.qHttp_Empty() and yatta_lib.qLog_Empty()):
             yatta_st = 0
-            print "Data flushed " + str(sendingCnt)
+            print ("Data flushed " + str(sendingCnt))
             sendingCnt = 0
         
