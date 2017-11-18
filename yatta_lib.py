@@ -289,6 +289,7 @@ def get_inventory():
                 readRate = int.from_bytes(rxBuff[5], byteorder='little')
                 readRate = int.from_bytes(rxBuff[6], byteorder='little')+readRate*16
                 print(str(antId)+":get_inventory readRate = " + str(readRate))
+                logger.info(str(antId)+":get_inventory readRate = " + str(readRate))
                 #print(str(antId)+":get_inventory readRate= ")
                 rxBuff = []
                 return True
@@ -304,7 +305,6 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 num = num+1
-
                 print('[' + current_timestamp + ']' + " get_inventory=>" + beautify_log(str(epc_tag))) #TODO:Push Q here
                 logger.info(" get_inventory=>" + beautify_log(str(epc_tag)))
         else:
@@ -318,11 +318,14 @@ def get_inventory():
                 return True
             else:
                 print("epc tag not found "+str(rxBuff))
+                logger.error("epc tag not found "+str(rxBuff))
+                # add logger.error
                 return False
 
 def beautify_log(log_message):
     # timestamp = arrow.utcnow().to('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss')
     log_message = log_message.replace("b'\\x", '').replace("'", '').replace(",", '').replace('[', '').replace(']', '')
+    log_message = log_message.upper().replace(' ', '')
     return (log_message)
 
 
