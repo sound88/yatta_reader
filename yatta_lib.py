@@ -2,10 +2,19 @@ import serial
 import queue
 import threading
 import time
-import binascii
-import codecs
-yattaHTTPQ =  queue.Queue()
-yattaLogQ =  queue.Queue()
+import arrow
+import logging
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+logger.basicConfig(filename = 'tag.log', format='[ %(asctime)s ][ %(name)s ][ %(levelname)s ] %(message)s')
+
+yattaHTTPQ = queue.Queue()
+yattaLogQ = queue.Queue()
+
+## Initial Variable ###
 
 COMMAND_SUCCESS = b'\10'
 
@@ -23,13 +32,15 @@ sim_rx_inventory3 = [0xA0, 0x13, 0x01, 0x89, 0xD4, 0x30, 0x00, 0xE2, 0x00, 0x40,
 sim_rx_inventory4 = [0xA0, 0x13, 0x01, 0x89, 0xD4, 0x30, 0x00, 0xE2, 0x00, 0x40, 0x74, 0x85, 0x0A, 0x01, 0x03, 0x16, 0x90, 0x67, 0xDD, 0x2F, 0x7D]
 sim_rx_inventory5 = [0xA0, 0x0A, 0x01, 0x89, 0x00, 0x00, 0x11, 0x00, 0x00, 0x00, 0x05, 0xB6]
 
+
+
+
 def timeout_handler():
     timeoutFlag = True
     
 def timeout_start(timeout_sec):
     timeoutFlag = False
     threading.Timer(timeout_sec, timeout_handler).start()
-
 
 def init(yatta_sim):
         global yatta_mode , uart
@@ -110,7 +121,7 @@ def CheckSum(uBuff, uBuffLen):
 
 #uBuff = [0xA0 , 0x04 , 0x01 , 0x74 , 0x00]
 #checksum_ans =  CheckSum(uBuff, 5)
-#print(format(checksum_ans,'#04X')
+#print(format(checksum_ansprint ,'#04X')
 
 #A0 04 01 89 01 D1
 #A0 13 01 89 8C 30 00 30 08 33 B2 DD D9 01 40 00 00 00 01 37 BB
@@ -266,6 +277,7 @@ def get_inventory():
     yatta_txData(tx_buff)
     #TODO: make below
     while(yatta_waitRxReader(0.5) == True):
+        current_timestamp = arrow.utcnow().to('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss')
         if yatta_mode == 0:
             if(rxBuff[1]  == b'\x0a'):    #if(int(rxBuff[1], 16)  == 0x0A):
                 #epc done with success
@@ -279,7 +291,8 @@ def get_inventory():
                 return True
             elif(rxBuff[1]  == b'\x04'):    #(int(rxBuff[1], 16)  == 0x04):
                 #don with error
-                print("get_inventory error="+str(rxBuff[4]))
+                print('[' + current_timestamp + ']' + " get_inventory error="+ str(rxBuff[4]))
+                logger.error("get_inventory error=> "+ beautify_log(str(rxBuff[4])))
                 rxBuff = []
                 return False
             else:
@@ -288,15 +301,27 @@ def get_inventory():
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
                 num = num+1
-                #print("get_inventory=>" + str(epc_tag)) #TODO:Push Q here
+
+                print('[' + current_timestamp + ']' + " get_inventory=>" + beautify_log(str(epc_tag))) #TODO:Push Q here
+                logger.info(" get_inventory=>" + beautify_log(str(epc_tag)))
         else:
             if(rxBuff[1]  == b'\x13'):
                 #epc available
                 #epc_tag = rxBuff[7:7+EPC_LEN]
                 push_epc_tag(time.time(), rxBuff[7:7+EPC_LEN])
                 rxBuff = []
-                print("get_inventory total num= " + str(num))
+                print('[' + current_timestamp + ']' + " get_inventory total num= " + str(num))
+                logger.info(" get_inventory total num= " + str(num))
                 return True
             else:
                 print("epc tag not found "+str(rxBuff))
                 return False
+
+def beautify_log(log_message):
+    # timestamp = arrow.utcnow().to('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss')
+    log_message = log_message.replace("b'\\x", '').replace("'", '').replace(",", '').replace('[', '').replace(']', '')
+    return (log_message)
+
+
+
+

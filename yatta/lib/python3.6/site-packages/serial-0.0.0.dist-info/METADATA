@@ -1,0 +1,27 @@
+Metadata-Version: 2.0
+Name: serial
+Version: 0.0.0
+Summary: A library for serializing python objects as JSON/YAML/XML, and deserializing JSON/YAML/XML.
+Home-page: https://bitbucket.com/davebelais/serial.git
+Author: David Belais
+Author-email: david@belais.me
+License: MIT
+Keywords: openapi swagger
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Requires-Dist: future (>=0.15.2)
+Requires-Dist: jsonpointer (>=1.12)
+Requires-Dist: pyyaml (>=3.12)
+Provides-Extra: dev
+Requires-Dist: pytest (>=2.9.0); extra == 'dev'
+Provides-Extra: test
+Requires-Dist: pytest (>=2.9.0); extra == 'test'
+Requires-Dist: oapi (>=0.0.2); extra == 'test'
+
+serial
+======
+
